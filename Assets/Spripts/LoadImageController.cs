@@ -16,7 +16,7 @@ public class LoadImageController : MonoBehaviour {
     private RaycastHit2D rayHit;
     private int posX, posY;
 
-    private List<GameObject> xxx = new List<GameObject>();
+    private List<GameObject> ListDelete = new List<GameObject>();
 
 	void Start () {
         RandomImage();
@@ -59,16 +59,16 @@ public class LoadImageController : MonoBehaviour {
                 return;
             }
             else
-            {  
-                if (xxx.Count == 0)
+            {
+                if (ListDelete.Count == 0)
                 {
-                    xxx.Add(rayHit.collider.gameObject);
+                    ListDelete.Add(rayHit.collider.gameObject);
                 }
-                if(xxx.Count != 0)
+                if (ListDelete.Count != 0)
                 {
-                    if (rayHit.collider.gameObject.tag == xxx[0].tag)
+                    if (rayHit.collider.gameObject.tag == ListDelete[0].tag)
                     {
-                        xxx.Add(rayHit.collider.gameObject);
+                        ListDelete.Add(rayHit.collider.gameObject);
                     }
                 }
                
@@ -122,10 +122,12 @@ public class LoadImageController : MonoBehaviour {
     [ContextMenu("Xoa")]
     void Xoa()
     {
-        for (int i = 0; i < xxx.Count; i++)
+        Debug.Log(ListDelete.Count);
+        for (int i = 0; i < ListDelete.Count; i++)
         {
-            Destroy(xxx[i]);
-            xxx.Clear();
+            Destroy(ListDelete[i]);
+            
         }
+        ListDelete.Clear();
     }
 }

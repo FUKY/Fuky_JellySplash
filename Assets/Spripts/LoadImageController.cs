@@ -26,8 +26,28 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
 
     private List<GameObject> listConect = new List<GameObject>();
 
+    private int[][] map;
+
+    private GameObject meomeo;
 
 	void Start () {
+        map = new int[soCot][];
+        for (int i = 0; i < soCot; i++)
+        {
+            map[i] = new int[soHang];
+        }
+        for (int i = 0; i < soCot; i++)
+        {
+            for (int j = 0; j < soHang; j++)
+            {
+                if (i == 4 && j == 5)
+                {
+                    map[4][5] = 1;
+                }
+                else
+                    map[i][j] = 0;
+            }
+        }
         RandomImage(iTwenPos);// random hinh anh khi moi dua vao game o vi tri ItweenPos
         //update vi tri vao man hinh
         for (int i = 0; i < 7; i++)
@@ -42,6 +62,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
 	
 	// Update is called once per frame
 	void Update () {
+        //DestroyButtonMouse();
         CacCucRoiXuong();//kiem tra va cho roi cac cuc 
 
         textScore.text = "Score: " + score;
@@ -52,15 +73,24 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
     void RandomImage(float posIT)
     {
         arrGem = new GameObject[soCot][];
+
         for(int i=0; i<soCot; i++)
         {
             arrGem[i] = new GameObject[soHang];
+
         }
         for (int i = 0; i < soCot; i++)
         {
             for (int j = 0; j < soHang; j++)
-            {                
-                InstantiateGem(i, j, posIT);//in ra cac Object o vi tri PosIT
+            {
+                if (map[i][j] == 0)
+                {
+                    InstantiateGem(i, j, posIT);//in ra cac Object o vi tri PosIT
+                }
+                else
+                {
+                    InstantiateBlock(i, j);
+                }
             }
         }
     }
@@ -77,18 +107,8 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
             }
             else
             {
-                if (ListDelete.Count == 0)
-                {
-                    ListDelete.Add(rayHit.collider.gameObject);
-                }
-                if (ListDelete.Count != 0)
-                {
-                    if (rayHit.collider.gameObject.tag == ListDelete[0].tag)
-                    {
-                        ListDelete.Add(rayHit.collider.gameObject);
-                    }
-                }
-               
+                //Destroy(rayHit.collider.gameObject);      
+                Debug.Log(rayHit.collider.gameObject);
 
             }
  
@@ -114,23 +134,41 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
     {
         for (int i = 0; i < 7; i++) 
         {
-            for (int j = 0; j < 8; j++) 
+            for (int j = 0; j < 8; j++)
             {
                 if (arrGem[i][7] == null)
                 {
                     InstantiateGem(i, 7, 0);
                 }
-                if (arrGem[i][j] == null && arrGem[i][j + 1] != null) //kiem tra xem cac de roi xong
+                if (arrGem[i][j] == null) //kiem tra xem cac de roi xong
                 {
-                    //update to do moi
-                    arrGem[i][j + 1].transform.position = new Vector3(arrGem[i][j + 1].transform.position.x, arrGem[i][j + 1].transform.position.y - (float)(0.8f), arrGem[i][j + 1].transform.position.z);
-                    arrGem[i][j] = arrGem[i][j + 1];
-                    arrGem[i][j + 1] = null;
-                }    
-                      
+
+                    if (arrGem[i][j + 1] != null && arrGem[i][j + 1].tag == "Rock")
+                    {
+                        arrGem[i - 1][j + 1].transform.position = new Vector3(arrGem[i][j + 1].transform.position.x, arrGem[i][j + 1].transform.position.y - (float)(0.8f), arrGem[i][j + 1].transform.position.z);
+                        arrGem[i][j] = arrGem[i - 1][j + 1];
+                        arrGem[i - 1][j + 1] = null;
+                    }
+
+                    if (arrGem[i][j + 1] != null && arrGem[i][j + 1].tag != "Rock")
+                    {
+                        arrGem[i][j + 1].transform.position = new Vector3(arrGem[i][j + 1].transform.position.x, arrGem[i][j + 1].transform.position.y - (float)(0.8f), arrGem[i][j + 1].transform.position.z);
+                        arrGem[i][j] = arrGem[i][j + 1];
+                        arrGem[i][j + 1] = null;
+                    }
+
+                }
             }
         }
 
+    }
+
+    bool KiemTraCucPhiaTren(GameObject gameObj)
+    {
+        if (gameObj == meomeo)
+            return true;
+        return false;
+ 
     }
     
     //In ra man hinh o vi tri "hang", "cot"
@@ -140,11 +178,18 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         index = Random.Range(0, 5);
         GameObject a = Instantiate(listGem[index], new Vector3(hang * 0.8f - x, cot * 0.8f - y + posIT, 0), Quaternion.identity) as GameObject;
         arrGem[hang][cot] = a;
-
         //add vao Canvas
         a.transform.parent = transform;
-        a.transform.localScale = Vector3.one;  
-        
+        a.transform.localScale = Vector3.one;   
+ 
+    }
+    void InstantiateBlock(int hang, int cot)
+    {
+        GameObject a = Instantiate(listGem[listGem.Length -1], new Vector3(hang * 0.8f - x, cot * 0.8f - y, 0), Quaternion.identity) as GameObject;
+        arrGem[hang][cot] = a;
+        //add vao Canvas
+        a.transform.parent = transform;
+        a.transform.localScale = Vector3.one;
     }
 
     //xoa cac  Object co trong listDelete

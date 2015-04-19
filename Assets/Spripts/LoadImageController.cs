@@ -179,7 +179,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         GameObject a = Instantiate(listGem[index], new Vector3(hang * 0.8f - x, cot * 0.8f - y + posIT, 0), Quaternion.identity) as GameObject;
         arrGem[hang][cot] = a;
         //add vao Canvas
-        a.transform.parent = transform;
+        a.transform.SetParent(transform);
         a.transform.localScale = Vector3.one;   
  
     }
@@ -245,34 +245,41 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
     public void OnDrag(PointerEventData eventData)
     {
         rayHit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-        if (ListDelete[0] == null)
+        if (ListDelete == null)
         {
             return;
         }
-        else
+
         if (rayHit.collider == null)
         {
             return;
         }
-        else
+
+        if (ListDelete.Count <= 0 || ListDelete[0] == null) 
         {
-            if (rayHit.collider.gameObject.tag == ListDelete[0].tag && KiemTraKhoangCach(rayHit.collider.gameObject,ListDelete[ListDelete.Count - 1]) <= 1.5f)//kiem tra de dua vao listDelete
+            return;
+        }
+
+        if (rayHit.collider.gameObject.tag == ListDelete[0].tag && KiemTraKhoangCach(rayHit.collider.gameObject, ListDelete[ListDelete.Count - 1]) <= 1.5f)//kiem tra de dua vao listDelete
+        {
+            if (!ListDelete.Contains(rayHit.collider.gameObject) && ListDelete.Count >= 1)//kiem tra xem doi tuong chon da co trong ListDelete chua
             {
-                if (!ListDelete.Contains(rayHit.collider.gameObject) && ListDelete.Count >= 1)//kiem tra xem doi tuong chon da co trong ListDelete chua
-                {
-                    InstantiateConect(rayHit.collider.gameObject, ListDelete[ListDelete.Count - 1]);//xuat ket noi ra man hinh
-                    ListDelete.Add(rayHit.collider.gameObject);
-                    
-                }
-                if (rayHit.collider.gameObject == ListDelete[ListDelete.Count - 2] && ListDelete.Count >= 2 && listConect.Count >= 1)//neu nguoi choi quay lai cuc phia trc co
+                InstantiateConect(rayHit.collider.gameObject, ListDelete[ListDelete.Count - 1]);//xuat ket noi ra man hinh
+                ListDelete.Add(rayHit.collider.gameObject);
+
+            }
+            if (ListDelete.Count >= 2)
+            {
+                if (rayHit.collider.gameObject == ListDelete[ListDelete.Count - 2] && listConect.Count >= 1)//neu nguoi choi quay lai cuc phia trc co
                 {
                     ListDelete.RemoveAt(ListDelete.Count - 1);
                     Destroy(listConect[listConect.Count - 1]);
                     listConect.RemoveAt(listConect.Count - 1);
-                    
+
                 }
             }
-        }    
+
+        }
     }
 
     //kiem tra cac cuc gan nhau moi cho vao listDelete

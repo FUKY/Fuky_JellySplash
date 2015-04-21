@@ -28,7 +28,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
 
     private int[][] map;
 
-    private GameObject meomeo;
+    Gem gem;
 
 	void Start () {
         map = new int[soCot][];
@@ -39,15 +39,12 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         for (int i = 0; i < soCot; i++)
         {
             for (int j = 0; j < soHang; j++)
-            {
-                if (i == 4 && j == 5)
-                {
-                    map[4][5] = 1;
-                }
-                else
+            {                
                     map[i][j] = 0;
             }
         }
+        map[3][4] = 1;
+        map[0][4] = 1;
         RandomImage(iTwenPos);// random hinh anh khi moi dua vao game o vi tri ItweenPos
         //update vi tri vao man hinh
         for (int i = 0; i < 7; i++)
@@ -66,6 +63,10 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         CacCucRoiXuong();//kiem tra va cho roi cac cuc 
 
         textScore.text = "Score: " + score;
+        if (Input.GetMouseButtonDown(1))
+        {
+            LoangDau(1, 1);
+        }
 	}
 
     //random ra cac mau o vi tri khac nhau
@@ -140,36 +141,41 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
                 {
                     InstantiateGem(i, 7, 0);
                 }
-                if (arrGem[i][j] == null) //kiem tra xem cac de roi xong
-                {
-
-                    if (arrGem[i][j + 1] != null && arrGem[i][j + 1].tag == "Rock")
-                    {
-                        arrGem[i - 1][j + 1].transform.position = new Vector3(arrGem[i][j + 1].transform.position.x, arrGem[i][j + 1].transform.position.y - (float)(0.8f), arrGem[i][j + 1].transform.position.z);
-                        arrGem[i][j] = arrGem[i - 1][j + 1];
-                        arrGem[i - 1][j + 1] = null;
-                    }
-
-                    if (arrGem[i][j + 1] != null && arrGem[i][j + 1].tag != "Rock")
-                    {
-                        arrGem[i][j + 1].transform.position = new Vector3(arrGem[i][j + 1].transform.position.x, arrGem[i][j + 1].transform.position.y - (float)(0.8f), arrGem[i][j + 1].transform.position.z);
-                        arrGem[i][j] = arrGem[i][j + 1];
-                        arrGem[i][j + 1] = null;
-                    }
-
-                }
+                DiChuyenCacCuc(i, j);
             }
         }
 
     }
 
-    bool KiemTraCucPhiaTren(GameObject gameObj)
+    void DiChuyenCacCuc(int m,int n)
     {
-        if (gameObj == meomeo)
-            return true;
-        return false;
- 
+        if (arrGem[m][n] == null)
+        {
+            if (arrGem[m][n + 1] != null && arrGem[m][n + 1].tag == "Rock")
+            {
+
+                int max = m - 1 > 0 ? m - 1 :  m + 1;
+
+                if (arrGem[max][n + 1] == null)
+                {
+                    return;
+                }
+                else
+                {
+                    arrGem[max][n + 1].transform.position = new Vector3(arrGem[m][n + 1].transform.position.x, arrGem[m][n + 1].transform.position.y - (float)(0.8f), arrGem[m][n + 1].transform.position.z);
+                    arrGem[m][n] = arrGem[max][n + 1];
+                    arrGem[max][n + 1] = null;
+                }
+            }
+            if (arrGem[m][n + 1] != null && arrGem[m][n + 1].tag != "Rock")
+            {
+                arrGem[m][n + 1].transform.position = new Vector3(arrGem[m][n + 1].transform.position.x, arrGem[m][n + 1].transform.position.y - (float)(0.8f), arrGem[m][n + 1].transform.position.z);
+                arrGem[m][n] = arrGem[m][n + 1];
+                arrGem[m][n + 1] = null;
+            }
+        }
     }
+
     
     //In ra man hinh o vi tri "hang", "cot"
     //cong them posIT de su dung Itwen
@@ -180,8 +186,10 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         arrGem[hang][cot] = a;
         //add vao Canvas
         a.transform.SetParent(transform);
-        a.transform.localScale = Vector3.one;   
- 
+        a.transform.localScale = Vector3.one;
+
+        gem = a.GetComponent<Gem>();
+        gem.SetProfile(cot, hang, index);
     }
     void InstantiateBlock(int hang, int cot)
     {
@@ -299,12 +307,6 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
             iT.MoveTo.easetype, iTween.EaseType.easeOutBack));//hieu ung di chuyen
     }
 
-    void ChangleColor(GameObject gameObj)
-    {
-        color = gameObj.GetComponent<Image>();
-        color.color = Color.red;        
-    }
-
     //In conect ra giua 2 cuc dc keo
     void InstantiateConect(GameObject gameObj1, GameObject gameObj2)
     {
@@ -337,5 +339,29 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
             ListDelete.Add(arrGem[i][0]);
         }
         Xoa();
+    }
+
+    void LoangDau(int i, int j)
+    {
+
+        Debug.Log(arrGem[i][j]);
+
+        for (int b = j - 1; b <= j + 1; b++)
+        {
+            for (int a = i - 1; a <= i + 1; a++)
+            {
+                if (a >= 0 && b >= 0 && a <= 6 && b <= 7)
+                {
+                    if (arrGem[i][j].tag == arrGem[a][b].tag && arrGem[a][b].GetComponent<Gem>().check == false)
+                    {
+                        arrGem[i][j].GetComponent<Gem>().check = true;
+                        arrGem[a][b].GetComponent<Gem>().check = true;
+                        arrGem[i][j].GetComponent<Gem>().ChangleColor();
+                        arrGem[a][b].GetComponent<Gem>().ChangleColor();
+                        LoangDau(a, b);
+                    }
+                }
+            }
+        }
     }
 }

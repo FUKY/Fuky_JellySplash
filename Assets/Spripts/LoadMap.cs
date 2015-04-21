@@ -9,7 +9,7 @@ public class LoadMap : MonoBehaviour {
 	void Start () {
         //string text = System.IO.File.ReadAllText("D:\\SVN\\Fuky_JellySplash\\trunk\\Assets\\Map\\myfile.txt");
         //Debug.Log(text);
-        TextAsset mytxtData = Resources.Load("Assets\\Map\\myfile.txt") as TextAsset;
+        TextAsset mytxtData = Resources.Load("Map/myfile") as TextAsset;
         Debug.Log(mytxtData);
         //string txt = mytxtData.text;
         //Debug.Log(txt);

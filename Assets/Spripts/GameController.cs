@@ -17,7 +17,11 @@ public class GameController : MonoBehaviour {
 
     private RaycastHit2D rayHit;
 
+    //List<Object> listVetCan = new List<Object>();
+    List<List<GameObject>> list = new List<List<GameObject>>();
+
     private int[][] map;
+
 
     void Start()
     {
@@ -39,17 +43,13 @@ public class GameController : MonoBehaviour {
             }
         }
         RandomImage();
-        
-
+        CheckListInvalid();
     }
     void Update()
     {
         DestroyButtonMouse();
         CacCucRoiXuong();
-        //if(Input.GetMouseButtonDown(1))
-        //{
-        //    VetCan(1, 1);
-        //}
+
     }
     void RandomImage()
     {
@@ -155,19 +155,72 @@ public class GameController : MonoBehaviour {
                 }
             }
         }
+        //CheckListInvalid();
 
     }
 
-    [ContextMenu("TestVetCan")]
+    
     public void TestVetCan() 
     {
-        VetCan(1, 1);
+
+        for (int j = 0; j < 8; j++)
+        {
+            for (int i = 0; i < 7; i++)
+            {
+                if (arrGem[i][j].tag != "Rock")
+                {
+                    List<GameObject> listVetCan = new List<GameObject>();
+                    VetCan(listVetCan, i, j);
+                    if (listVetCan.Count >= 3)
+                    {
+                        list.Add(listVetCan);
+                        Debug.Log(list.Count);
+                    }
+                }           
+                
+            }
+        }
+
     }
-
-    void VetCan(int i, int j)
+    [ContextMenu("ResetCheckGem")]
+    void ResetCheckGem()
     {
-
-        Debug.Log(arrGem[i][j]);
+        for(int i = 0; i < 7 ; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (arrGem[i][j].tag != "Rock")
+                    arrGem[i][j].GetComponent<Gem>().check = false;
+            }
+        }
+ 
+    }
+    [ContextMenu("CheckListInvalid")]
+    void CheckListInvalid() 
+    {
+        list.Clear();
+        for (int j = 0; j < 8; j++)
+        {
+            for (int i = 0; i < 7; i++)
+            {
+                if (arrGem[i][j].tag != "Rock")
+                {
+                    List<GameObject> listVetCan = new List<GameObject>();
+                    VetCan(listVetCan, i, j);
+                    if (listVetCan.Count >= 3)
+                    {
+                        list.Add(listVetCan);
+                        Debug.Log(list.Count);
+                        
+                    }
+                }
+            }
+        }
+        ResetCheckGem();
+    }
+    //private List<Object> listVetCan = new List<Object>();
+    List<GameObject> VetCan(List<GameObject> listVetCan, int i, int j)
+    {
         
         for (int b = j - 1; b <= j + 1; b++)
         {
@@ -177,136 +230,53 @@ public class GameController : MonoBehaviour {
                 {
                     if (arrGem[i][j].tag == arrGem[a][b].tag && arrGem[a][b].GetComponent<Gem>().check == false)
                     {
+                        //Debug.Log(arrGem[i][j]);
                         arrGem[i][j].GetComponent<Gem>().check = true;
                         arrGem[a][b].GetComponent<Gem>().check = true;
-                        arrGem[i][j].GetComponent<Gem>().ChangleColor();
-                        arrGem[a][b].GetComponent<Gem>().ChangleColor();
-                        VetCan(a, b);
+
+                        if (!listVetCan.Contains(arrGem[i][j]))
+                        {
+                            listVetCan.Add(arrGem[i][j]);                            
+                        }
+                        if (!listVetCan.Contains(arrGem[a][b]))
+                        {
+                            listVetCan.Add(arrGem[a][b]);
+                        }
+                        VetCan(listVetCan, a, b);                       
                     }
                 }
                 
             }
         }
+        return listVetCan;
     }
 
-
-    void ThuatToanVetCan(int i, int j)
+    [ContextMenu("ScaleGem")]
+    void ScaleGem()
     {
-        Debug.Log(arrGem[i][j]);
-        //1
-        if (arrGem[i][j].tag == arrGem[i -1][j - 1].tag && arrGem[i -1][j - 1].GetComponent<Gem>().check == false)
+        for (int i = 0; i < list[0].Count; i++)
         {
-            Debug.Log("1");
-            arrGem[i][j].GetComponent<Gem>().check = true;
-            arrGem[i - 1][j - 1].GetComponent<Gem>().check = true;
-            if (i - 1 < 0)
-            {
-                i = 1;
-            }
-            if (j - 1 < 0)
-            {
-                j = 1;
-            }
-            ThuatToanVetCan(i -1, j - 1);
+            list[0][i].transform.localScale = new Vector3(localScale, localScale, 1);
         }
-        //2
-        if (arrGem[i][j].tag == arrGem[i][j - 1].tag && arrGem[i][j - 1].GetComponent<Gem>().check == false)
-        {
-            Debug.Log("2");
-            arrGem[i][j].GetComponent<Gem>().check = true;
-            arrGem[i][j - 1].GetComponent<Gem>().check = true;
-            if (j - 1 < 0)
-            {
-                j = 1;
-            }
-            ThuatToanVetCan(i , j - 1);
-        }
-        //3
-        if (arrGem[i][j].tag == arrGem[i + 1][j - 1].tag && arrGem[i + 1][j - 1].GetComponent<Gem>().check == false)
-        {
-            Debug.Log("3");
-            arrGem[i][j].GetComponent<Gem>().check = true;
-            arrGem[i + 1][j - 1].GetComponent<Gem>().check = true;
-            if (i + 1 > 8)
-            {
-                i = 6;
-            }
-            if (j - 1 < 0)
-            {
-                j = 1;
-            }
-            
-            ThuatToanVetCan(i + 1, j - 1);
-        }
-        //4
-        if (arrGem[i][j].tag == arrGem[i - 1][j].tag && arrGem[i - 1][j ].GetComponent<Gem>().check == false)
-        {
-            Debug.Log("4");
-            arrGem[i][j].GetComponent<Gem>().check = true;
-            arrGem[i - 1][j].GetComponent<Gem>().check = true;
-            if (i - 1 < 0)
-            {
-                i = 1;
-            }
-            ThuatToanVetCan(i -1, j );
-        }
-        //5
-        if (arrGem[i][j].tag == arrGem[i + 1][j].tag && arrGem[i + 1][j].GetComponent<Gem>().check == false)
-        {
-            Debug.Log("5");
-            arrGem[i][j].GetComponent<Gem>().check = true;
-            arrGem[i + 1][j].GetComponent<Gem>().check = true;
-            if (i + 1 > 8)
-            {
-                i = 6;
-            }
-            ThuatToanVetCan(i + 1, j);
-        }
-        //6
-        if (arrGem[i][j].tag == arrGem[i - 1][j + 1].tag && arrGem[i -1][j + 1].GetComponent<Gem>().check == false)
-        {
-            Debug.Log("6");
-            arrGem[i][j].GetComponent<Gem>().check = true;
-            arrGem[i - 1][j + 1].GetComponent<Gem>().check = true;
-            if (i - 1 < 0)
-            {
-                i = 1;
-            }
-            if (j + 1 > 7)
-            {
-                j = 5;
-            }
-            ThuatToanVetCan(i - 1, j + 1);
-        }
-        //7
-        if (arrGem[i][j].tag == arrGem[i][j + 1].tag && arrGem[i][j + 1].GetComponent<Gem>().check == false)
-        {
-            Debug.Log("7");
-            arrGem[i][j].GetComponent<Gem>().check = true;
-            arrGem[i][j + 1].GetComponent<Gem>().check = true;
-            if (j + 1 > 7)
-            {
-                j = 5;
-            }
-            ThuatToanVetCan(i, j + 1);
-        }
-        //8
-        if (arrGem[i][j].tag == arrGem[i + 1][j + 1].tag && arrGem[i + 1][j + 1].GetComponent<Gem>().check == false)
-        {
-            Debug.Log("8");
-            arrGem[i][j].GetComponent<Gem>().check = true;
-            arrGem[i + 1][j + 1].GetComponent<Gem>().check = true;
-            if (i + 1 > 8)
-            {
-                i = 6;
-            }
-            if (j + 1 > 7)
-            {
-                j = 5;
-            }
-            ThuatToanVetCan(i + 1, j + 1);
-        }
-
     }
-  
+    float scale = 0.01f;
+    float localScale = 1;
+
+    bool activeHelp;
+    void FixedUpdate()
+    {
+        
+        localScale += scale;
+        if (localScale > 1.2)
+        {
+            scale = -0.01f;
+        }
+        if (localScale < 0.8)
+        {
+            scale = 0.01f;
+        }
+        Debug.Log(localScale);
+        if (activeHelp == true)
+            ScaleGem();
+    }
 }

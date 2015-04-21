@@ -25,12 +25,13 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
     public GameObject conect;
 
     private List<GameObject> listConect = new List<GameObject>();
-
+    private List<List<GameObject>> listLoangDau = new List<List<GameObject>>();
     private int[][] map;
 
     Gem gem;
 
 	void Start () {
+        activeTime = true;
         map = new int[soCot][];
         for (int i = 0; i < soCot; i++)
         {
@@ -54,6 +55,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
                 UpdateViTri(arrGem[i][j], i, j);
             }
         }
+        CheckListInvalid();
         
 	}
 	
@@ -63,10 +65,6 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         CacCucRoiXuong();//kiem tra va cho roi cac cuc 
 
         textScore.text = "Score: " + score;
-        if (Input.GetMouseButtonDown(1))
-        {
-            LoangDau(1, 1);
-        }
 	}
 
     //random ra cac mau o vi tri khac nhau
@@ -144,7 +142,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
                 DiChuyenCacCuc(i, j);
             }
         }
-
+        CheckListInvalid();
     }
 
     void DiChuyenCacCuc(int m,int n)
@@ -226,6 +224,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
     
     public void OnBeginDrag(PointerEventData eventData)
     {
+        activeTime = false;
         rayHit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
 
         if (rayHit.collider == null)
@@ -244,9 +243,10 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
 
     //ket thuc nhan thi se xoa cac cuc trrong listDelete
     public void OnEndDrag(PointerEventData eventData)
-    {
+    {       
         Xoa();
-
+        
+        activeTime = true;
     }
    
     //add cac cuc khi keo
@@ -341,10 +341,8 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         Xoa();
     }
 
-    void LoangDau(int i, int j)
+    List<GameObject> LoangDau(List<GameObject> list, int i, int j)
     {
-
-        Debug.Log(arrGem[i][j]);
 
         for (int b = j - 1; b <= j + 1; b++)
         {
@@ -352,16 +350,123 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
             {
                 if (a >= 0 && b >= 0 && a <= 6 && b <= 7)
                 {
-                    if (arrGem[i][j].tag == arrGem[a][b].tag && arrGem[a][b].GetComponent<Gem>().check == false)
+                    if (arrGem[i][j].tag != null && arrGem[a][b] != null)
                     {
-                        arrGem[i][j].GetComponent<Gem>().check = true;
-                        arrGem[a][b].GetComponent<Gem>().check = true;
-                        arrGem[i][j].GetComponent<Gem>().ChangleColor();
-                        arrGem[a][b].GetComponent<Gem>().ChangleColor();
-                        LoangDau(a, b);
+                        if (arrGem[i][j].tag == arrGem[a][b].tag && arrGem[a][b].GetComponent<Gem>().check == false)
+                        {
+                            //Debug.Log(arrGem[i][j]);
+                            arrGem[i][j].GetComponent<Gem>().check = true;
+                            arrGem[a][b].GetComponent<Gem>().check = true;
+
+                            if (!list.Contains(arrGem[i][j]))
+                            {
+                                list.Add(arrGem[i][j]);
+                            }
+                            if (!list.Contains(arrGem[a][b]))
+                            {
+                                list.Add(arrGem[a][b]);
+                            }
+                            LoangDau(list, a, b);
+                        }
+                    }
+                }
+
+            }
+        }
+        return list;
+    }
+    void CheckListInvalid()
+    {
+        listLoangDau.Clear();
+        for (int j = 0; j < 8; j++)
+        {
+            for (int i = 0; i < 7; i++)
+            {                
+                if (arrGem[i][j] != null && arrGem[i][j].tag != "Rock")
+                {
+                    List<GameObject> list = new List<GameObject>();
+                    LoangDau(list, i, j);
+                    if (list.Count >= 3)
+                    {
+                        listLoangDau.Add(list);
                     }
                 }
             }
         }
+        ResetCheckGem();
+    }
+    void ResetCheckGem()
+    {
+        for (int i = 0; i < 7; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (arrGem[i][j] != null  && arrGem[i][j].tag != "Rock")
+                    arrGem[i][j].GetComponent<Gem>().check = false;
+            }
+        }
+
+    }
+
+    void ScaleGem()
+    {
+        for (int i = 0; i < listLoangDau[0].Count; i++)
+        {
+            if (listLoangDau[0][i] != null)
+                listLoangDau[0][i].transform.localScale = new Vector3(localScale, localScale, 1);
+        }
+    }
+    void ResetScaleGem()
+    {
+        for (int i = 0; i < listLoangDau[0].Count; i++)
+        {
+            if (listLoangDau[0][i] != null)
+                listLoangDau[0][i].transform.localScale = new Vector3(1, 1, 1);
+        }
+    }
+
+    float scale = 0.01f;
+    float localScale = 1;
+
+    public bool activeHelp;
+    public bool activeTime;
+
+    public float timeHelp;
+    private float help;
+    void FixedUpdate()
+    {
+        if (activeTime == true)
+        {
+            if (help > timeHelp)
+            {                
+                activeHelp = true;                
+            }
+            help += Time.deltaTime;
+        }
+        if (activeTime == false)
+        {
+            help = 0;
+            activeHelp = false;  
+        }
+
+        localScale += scale;
+        if (localScale > 1.2)
+        {
+            scale = -0.01f;
+        }
+        if (localScale < 0.8)
+        {
+            scale = 0.01f;
+        }
+        if (activeHelp == true)
+        {
+            ScaleGem();
+        }
+        else
+        {
+            ResetScaleGem();
+ 
+        }
+
     }
 }

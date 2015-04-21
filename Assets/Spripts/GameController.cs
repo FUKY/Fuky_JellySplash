@@ -46,10 +46,10 @@ public class GameController : MonoBehaviour {
     {
         DestroyButtonMouse();
         CacCucRoiXuong();
-        if(Input.GetMouseButtonDown(1))
-        {
-            VetCan(1, 1);
-        }
+        //if(Input.GetMouseButtonDown(1))
+        //{
+        //    VetCan(1, 1);
+        //}
     }
     void RandomImage()
     {
@@ -158,6 +158,11 @@ public class GameController : MonoBehaviour {
 
     }
 
+    [ContextMenu("TestVetCan")]
+    public void TestVetCan() 
+    {
+        VetCan(1, 1);
+    }
 
     void VetCan(int i, int j)
     {
@@ -183,6 +188,8 @@ public class GameController : MonoBehaviour {
             }
         }
     }
+
+
     void ThuatToanVetCan(int i, int j)
     {
         Debug.Log(arrGem[i][j]);

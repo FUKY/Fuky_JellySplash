@@ -44,22 +44,21 @@ public class Controller : MonoBehaviour {
 	}
     void GameOver()
     {
-        if (time.timeS <= 1 && loadImageControll.score < diemDatDuoc[level])
+        if (time.timeS <= 0 && loadImageControll.score < diemDatDuoc[level])
         {
             nextLevel.text = "Game Over";
             panel.active = true;
             loadImageControll.activeTime = false;
             if (delay > timeDelay)
             {
-                level = 0;
                 loadImageControll.RandomMap();
-                loadImageControll.score = 0;
                 nextLevel.text = "";
-                time.timeS = 60;
+                loadImageControll.score = 0;
                 time.timeImage.fillAmount = 1;
+                time.timeS = 60;
                 loadImageControll.activeTime = true;
                 panel.active = false;
-
+                level = 0;
                 delay = 0;
             }
             delay += Time.deltaTime;
@@ -76,7 +75,7 @@ public class Controller : MonoBehaviour {
             if (level == 4)
             {
                 nextLevel.text = " WIN CMNR";
-                delay = 0;
+                
             }
             panel.active = true;
             loadImageControll.activeTime = false;

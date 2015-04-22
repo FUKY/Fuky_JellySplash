@@ -434,7 +434,10 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         for (int i = 0; i < 7; i++)
         {
             for (int j = 0; j < 8; j++)
-            {   
+            {
+                listConect.Clear();
+                ListDelete.Clear();
+                listLoangDau.Clear();
                 Destroy(arrGem[i][j]);
             }
         }

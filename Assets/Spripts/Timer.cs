@@ -32,8 +32,7 @@ public class Timer : MonoBehaviour {
         }
         if (timeS <= 0)
         {
-            timeS = 60;
-            timeImage.fillAmount = 1;
+            timeS = 0;
         }
         delay += Time.deltaTime;
 	}

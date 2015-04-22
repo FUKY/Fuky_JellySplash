@@ -14,7 +14,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
     public float iTwenPos;//vi tri in ra luc dau
     public int soHang;//so hang cua mang
     public int soCot;//so cot cua mang
-    private int score = 0;//diem
+    public int score = 0;//diem
     private RaycastHit2D rayHit;   
     private List<GameObject> ListDelete = new List<GameObject>();//list Object de xoa
 
@@ -30,7 +30,9 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
 
     Gem gem;
 
+
 	void Start () {
+
         activeTime = true;
         map = new int[soCot][];
         for (int i = 0; i < soCot; i++)
@@ -40,12 +42,11 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         for (int i = 0; i < soCot; i++)
         {
             for (int j = 0; j < soHang; j++)
-            {                
-                    map[i][j] = 0;
+            {
+                map[i][j] = 0;
             }
         }
-        map[3][4] = 1;
-        map[0][4] = 1;
+
         RandomImage(iTwenPos);// random hinh anh khi moi dua vao game o vi tri ItweenPos
         //update vi tri vao man hinh
         for (int i = 0; i < 7; i++)
@@ -65,6 +66,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         CacCucRoiXuong();//kiem tra va cho roi cac cuc 
 
         textScore.text = "Score: " + score;
+  
 	}
 
     //random ra cac mau o vi tri khac nhau
@@ -425,14 +427,30 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         }
     }
 
-    float scale = 0.01f;
-    float localScale = 1;
+    [ContextMenu("Test")]
 
-    public bool activeHelp;
+    public void RandomMap()
+    {
+        for (int i = 0; i < 7; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {   
+                Destroy(arrGem[i][j]);
+            }
+        }
+
+    }
+
+    float scale = 0.01f;
+    public float localScale = 1;
+
+    private bool activeHelp;
     public bool activeTime;
 
     public float timeHelp;
     private float help;
+
+
     void FixedUpdate()
     {
         if (activeTime == true)
@@ -467,6 +485,12 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
             ResetScaleGem();
  
         }
+        if (listLoangDau.Count == 0)
+        {
+            RandomMap();
+        }
+
+       
 
     }
 }

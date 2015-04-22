@@ -1,28 +1,41 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
+
 
 public class Timer : MonoBehaviour {
 
 	// Use this for initialization
-    private SpriteRenderer time;
-    int t = 100;
+    public Image timeImage;
+    public Text textTime;
+    public float timeS;
+    float timeDelay = 1;
+    float a = 100;
+    float delay;
+
+    public GameObject canVas;
+    public GameObject Over;
 	void Start () {
-        time = gameObject.GetComponent<SpriteRenderer>();
-	
+ 
 	}
 	
 	// Update is called once per frame
 	void Update () {
-	    t--;
-        Debug.Log(t);
-        UpdateTime();
+        if (delay > timeDelay)
+        {
+            a -= 1;
+            timeS--;
+            string t = timeS.ToString();
+            textTime.text = t;
+            delay = 0;
+            timeImage.fillAmount -= 0.01666666f;
+        }
+        if (timeS <= 0)
+        {
+            timeS = 60;
+            timeImage.fillAmount = 1;
+        }
+        delay += Time.deltaTime;
 	}
-    public void UpdateTime()
-    {
-        // Set the health bar's colour to proportion of the way between green and red based on the player's health.
-        time.material.color = Color.Lerp(Color.green, Color.red, 1 - t * 0.01f);
 
-        // Set the scale of the health bar to be proportional to the player's health.
-        time.transform.localScale = new Vector3(t * 0.01f, 1, 1);
-    }
 }

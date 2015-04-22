@@ -19,6 +19,7 @@ public class Controller : MonoBehaviour {
     void Awake()
     {
         diemDatDuoc = new int[5] { 5000, 9000, 12000, 15000, 18000 };
+        //diemDatDuoc = new int[5] { 1000, 2000, 3000, 4000, 5000 };
         
         loadImageControll = gameObject.GetComponent<LoadImageController>();
         time = GameObject.Find("Time").GetComponent<Timer>();
@@ -43,7 +44,7 @@ public class Controller : MonoBehaviour {
 	}
     void GameOver()
     {
-        if (time.timeS <= 0 && loadImageControll.score < diemDatDuoc[level])
+        if (time.timeS <= 1 && loadImageControll.score < diemDatDuoc[level])
         {
             nextLevel.text = "Game Over";
             panel.active = true;

@@ -69,8 +69,15 @@ public class Controller : MonoBehaviour {
     {
         if (loadImageControll.score > diemDatDuoc[level])
         {
-            
-            nextLevel.text = " Next Level";
+            if (level < 4)
+            {
+                nextLevel.text = " Next Level";
+            }
+            if (level == 4)
+            {
+                nextLevel.text = " WIN CMNR";
+                delay = 0;
+            }
             panel.active = true;
             loadImageControll.activeTime = false;
             if (delay > timeDelay)

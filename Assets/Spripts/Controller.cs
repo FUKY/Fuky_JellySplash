@@ -75,7 +75,7 @@ public class Controller : MonoBehaviour {
             if (level == 4)
             {
                 nextLevel.text = " WIN CMNR";
-                
+                delay = 0;
             }
             panel.active = true;
             loadImageControll.activeTime = false;

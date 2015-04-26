@@ -10,6 +10,10 @@ public class Gem : MonoBehaviour {
     public int row;
     public int inDex;
     public bool check;
+    public bool destroyCollum = false;
+    public bool destroyRow = false;
+    public bool destroyColRow = false;
+    public bool cucDacBiet = false;
 
     public Gem()
     {

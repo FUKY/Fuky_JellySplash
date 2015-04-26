@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 public class GameController : MonoBehaviour {
@@ -8,6 +9,7 @@ public class GameController : MonoBehaviour {
     private int index;//so thu tu cac Prefabs
     public GameObject[] listGem;//list cac gem_Prefabs
     public GameObject clock;
+    public GameObject animationDestroy;
     private GameObject[][] arrGem;//list Game Object hien ra man hinh
     public float x, y;//vi tri camera
     public int soHang;//so hang cua mang
@@ -22,9 +24,15 @@ public class GameController : MonoBehaviour {
 
     private int[][] map;
 
+    List<GameObject> ListDelete = new List<GameObject>();
 
+    float delay = 0;
+    bool active = false;
+    int m,  n;
+    public bool hehe = false;
     void Start()
     {
+       
         map = new int[soCot][];
         for (int i = 0; i < soCot; i++)
         {
@@ -34,22 +42,26 @@ public class GameController : MonoBehaviour {
         {
             for (int j = 0; j < soHang; j++)
             {
-                if (i == 3 && j == 5)
-                {
-                    map[3][5] = 1;
-                }
-                else
-                    map[i][j] = 0;
+                map[i][j] = 0;
             }
         }
         RandomImage();
         CheckListInvalid();
+
+    }
+    [ContextMenu("Test1")]
+    void Test1()
+    {
+        m = Random.Range(0, 5);
+        n = Random.Range(0, 6);
+        ChangleColor(m, n);
     }
     void Update()
     {
         DestroyButtonMouse();
-        CacCucRoiXuong();
 
+         CacCucRoiXuong();
+        
     }
     void RandomImage()
     {
@@ -113,6 +125,8 @@ public class GameController : MonoBehaviour {
             {
                 Destroy(rayHit.collider.gameObject);
 
+                Instantiate(animationDestroy, rayHit.collider.transform.position, Quaternion.identity);
+                active = true;
             }
 
         }
@@ -182,7 +196,6 @@ public class GameController : MonoBehaviour {
         }
 
     }
-    [ContextMenu("ResetCheckGem")]
     void ResetCheckGem()
     {
         for(int i = 0; i < 7 ; i++)
@@ -195,7 +208,6 @@ public class GameController : MonoBehaviour {
         }
  
     }
-    [ContextMenu("CheckListInvalid")]
     void CheckListInvalid() 
     {
         list.Clear();
@@ -251,12 +263,66 @@ public class GameController : MonoBehaviour {
         return listVetCan;
     }
 
-    [ContextMenu("ScaleGem")]
+    [ContextMenu("Test")]
+    void Test(int i, int j)
+    {
+        if (arrGem[i][j] == null)
+            NoTheoChieuDoc(j);
+    }
+    void ChangleColor(int i, int j)
+    {
+        arrGem[i][j].GetComponent<Image>().color = Color.Lerp(arrGem[i][j].GetComponent<Image>().color, Color.black, 0.5f);
+    }
+    void NoTheoChieuNgang(int vitri)
+    {
+        for (int i = 0; i < 7; i++)
+        {
+            ListDelete.Add(arrGem[i][vitri]);
+        }
+        for (int i = 0; i < ListDelete.Count; i++)
+        {
+            Destroy(ListDelete[i]);
+        }
+        ListDelete.Clear();
+    }
+    void NoTheoChieuDoc(int vitri)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            ListDelete.Add(arrGem[vitri][i]);
+        }
+        for (int i = 0; i < ListDelete.Count; i++)
+        {
+            arrGem[vitri][i] = null;
+            Destroy(ListDelete[i]);            
+        }
+        ListDelete.Clear();
+    }
     void ScaleGem()
     {
         for (int i = 0; i < list[0].Count; i++)
         {
             list[0][i].transform.localScale = new Vector3(localScale, localScale, 1);
+        }
+    }
+
+    [ContextMenu("cucdacbiet1")]
+    void cucdacbiet1()
+    {
+        CucDacBiet(1, 1);
+    }
+    void CucDacBiet(int i,int j)
+    {
+        for (int m = i - 1; m <= i + 1; m++)
+        {
+            for (int n = j - 1; n <= j + 1; n++)
+            {
+                if (m >= 0 && n >= 0 && arrGem[m][n] != arrGem[i][j])
+                {
+                    arrGem[m][n].tag = arrGem[i][j].tag;
+                    arrGem[m][n].GetComponent<Image>().sprite = arrGem[i][j].GetComponent<Image>().sprite;
+                }
+            }
         }
     }
     float scale = 0.01f;
@@ -275,7 +341,6 @@ public class GameController : MonoBehaviour {
         {
             scale = 0.01f;
         }
-        Debug.Log(localScale);
         if (activeHelp == true)
             ScaleGem();
     }

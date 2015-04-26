@@ -3,22 +3,21 @@ using System.Collections;
 using UnityEngine.UI;
 
 public class Controller : MonoBehaviour {
-
-	// Use this for initialization
+	
     private LoadImageController loadImageControll;
     private Timer time;
-    public int[] diemDatDuoc;
+    
 
     public Text nextLevel;
     public GameObject panel;
 
-    float timeDelay = 3;
-    float delay;
-    int level = 0;
+    private float timeDelay = 3;
+    private float delay;
+    
 
     void Awake()
     {
-        diemDatDuoc = new int[5] { 5000, 9000, 12000, 15000, 18000 };
+        
         //diemDatDuoc = new int[5] { 1000, 2000, 3000, 4000, 5000 };
         
         loadImageControll = gameObject.GetComponent<LoadImageController>();
@@ -32,9 +31,8 @@ public class Controller : MonoBehaviour {
             Debug.Log("k tim thay LoadImage");
         }
     }
-
+    // Use this for initialization
 	void Start () {
-        
 	}
 	
 	// Update is called once per frame
@@ -42,9 +40,10 @@ public class Controller : MonoBehaviour {
         NextLevel();
         GameOver();
 	}
+    //reset lai level va random lai map
     void GameOver()
     {
-        if (time.timeS <= 0 && loadImageControll.score < diemDatDuoc[level])
+        if (time.timeS <= 0 && loadImageControll.score < loadImageControll.diemDatDuoc[loadImageControll.level])
         {
             nextLevel.text = "Game Over";
             panel.active = true;
@@ -58,21 +57,22 @@ public class Controller : MonoBehaviour {
                 time.timeS = 60;
                 loadImageControll.activeTime = true;
                 panel.active = false;
-                level = 0;
+                loadImageControll.level = 0;
                 delay = 0;
             }
             delay += Time.deltaTime;
         }
     }
+    //khi nguoi choi du dieu kien thi qua man
     void NextLevel()
     {
-        if (loadImageControll.score > diemDatDuoc[level])
+        if (loadImageControll.score > loadImageControll.diemDatDuoc[loadImageControll.level])
         {
-            if (level < 4)
+            if (loadImageControll.level < 4)
             {
                 nextLevel.text = " Next Level";
             }
-            if (level == 4)
+            if (loadImageControll.level == 4)
             {
                 nextLevel.text = " WIN CMNR";
                 delay = 0;
@@ -81,7 +81,7 @@ public class Controller : MonoBehaviour {
             loadImageControll.activeTime = false;
             if (delay > timeDelay)
             {
-                level++;
+                loadImageControll.level++;
                 loadImageControll.RandomMap();                
                 nextLevel.text = "";
                 loadImageControll.score = 0;

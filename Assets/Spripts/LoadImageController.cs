@@ -6,33 +6,53 @@ using UnityEngine.EventSystems;
 
 public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler {
 
-	// Use this for initialization
-    private  int index;//so thu tu cac Prefabs
+    //Public
     public GameObject[] listGem;//list cac gem_Prefabs
-    private GameObject[][] arrGem;//list Game Object hien ra man hinh
+    public GameObject destroyGem;
+    public GameObject conect;
+    //UI
+    public Text textScore;//text diem
+    public Text textDiemCanDat;//text diem can dat
+
     public float x, y;//vi tri camera
     public float iTwenPos;//vi tri in ra luc dau
     public int soHang;//so hang cua mang
     public int soCot;//so cot cua mang
     public int score = 0;//diem
+    
+    public int[] diemDatDuoc;//cac level trong game(se thay bang load file txt)
+    public int level;//level trong game
+    public bool desGem = false;//kiem tra cac cuc Gem da xoa chua
+    public float localScale = 1;//kich thuc gem
+    public bool activeTime = false;
+    public float timeHelp;   
+
+
+	// -----------   
+    private GameObject[][] arrGem;//list Game Object hien ra man hinh
     private RaycastHit2D rayHit;   
     private List<GameObject> ListDelete = new List<GameObject>();//list Object de xoa
+    private List<GameObject> listConect = new List<GameObject>();//tao lien ket cho cac cuc(sau nay thanh thanh Animation)
+    private List<List<GameObject>> listLoangDau = new List<List<GameObject>>();//kiem tra con duong nao de an khong
+    private int[][] map;//map Game(load tu file txt)
+    private Gem gem;
 
-    public Text textScore;
-
-    private Image color;
-
-    public GameObject conect;
-
-    private List<GameObject> listConect = new List<GameObject>();
-    private List<List<GameObject>> listLoangDau = new List<List<GameObject>>();
-    private int[][] map;
-
-    Gem gem;
+    private int index;//so thu tu cac Prefabs   
+    private bool activeHelp;
+    private float scale = 0.01f;
+    private float help;
+    private bool boolScale = false;
+    private int m, n;
 
 
+    //test
+    private bool cucdacbiet;
+    private bool cucdacbiet1;
+
+    public GameObject[] dacBiet = new GameObject[4];
 	void Start () {
-
+        level = 0;
+        diemDatDuoc = new int[5] { 5000, 9000, 12000, 15000, 18000 };
         activeTime = true;
         map = new int[soCot][];
         for (int i = 0; i < soCot; i++)
@@ -60,14 +80,6 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         
 	}
 	
-	// Update is called once per frame
-	void Update () {
-        //DestroyButtonMouse();
-        CacCucRoiXuong();//kiem tra va cho roi cac cuc 
-
-        textScore.text = "Score: " + score;
-  
-	}
 
     //random ra cac mau o vi tri khac nhau
     // tham so truyen vao posIT de o vi tri khac, va su dung Itween de dua ve vi tri trong man hinh
@@ -203,12 +215,35 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
     //xoa cac  Object co trong listDelete
     void Xoa()
     {
-        //xoa cac cuc
+       
+        //xoa cac cuc        
         if (ListDelete.Count >= 3)
         {
+            //kiem tra xem cac cuc dac biet co o trong listDelete khong
+            for (int i = 0; i < soCot; i++)
+            {
+                for (int j = 0; j < soHang; j++)
+                {
+                    if (arrGem[i][j].GetComponent<Gem>().destroyCollum == true && ListDelete.Contains(arrGem[i][j]))
+                    {
+                        NoTheoChieuNgang(i);
+                    }
+                    if (arrGem[i][j].GetComponent<Gem>().destroyRow == true && ListDelete.Contains(arrGem[i][j]))
+                    {
+                        NoTheoChieuDoc(j);
+                    }
+                    if (arrGem[i][j].GetComponent<Gem>().destroyColRow == true && ListDelete.Contains(arrGem[i][j]))
+                    {
+                        NoTheoHaiChieu(i, j);
+                    }
+                }
+            }
+            //xoa cac Gem trong listDelete
             for (int i = 0; i < ListDelete.Count; i++)
             {
+                
                 Destroy(ListDelete[i]);
+                Instantiate(destroyGem, ListDelete[i].transform.position, Quaternion.identity);
                 score += 100;
             }            
         }
@@ -217,6 +252,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         {
             Destroy(listConect[i]);
         }
+        
         ListDelete.Clear();
         listConect.Clear();
         
@@ -227,6 +263,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
     public void OnBeginDrag(PointerEventData eventData)
     {
         activeTime = false;
+        desGem = false;
         rayHit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
 
         if (rayHit.collider == null)
@@ -245,10 +282,12 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
 
     //ket thuc nhan thi se xoa cac cuc trrong listDelete
     public void OnEndDrag(PointerEventData eventData)
-    {       
+    {
+        
         Xoa();
         
         activeTime = true;
+        cucdacbiet1 = true;
     }
    
     //add cac cuc khi keo
@@ -276,6 +315,16 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
             {
                 InstantiateConect(rayHit.collider.gameObject, ListDelete[ListDelete.Count - 1]);//xuat ket noi ra man hinh
                 ListDelete.Add(rayHit.collider.gameObject);
+
+                if (ListDelete.Count == 5)
+                {
+                    cucdacbiet = true;
+                    
+                }
+                if (rayHit.collider.gameObject.GetComponent<Gem>().cucDacBiet == true)
+                {
+                    CucDacBiet(TimViTriX(rayHit.collider.gameObject), TimViTriY(rayHit.collider.gameObject));
+                }
 
             }
             if (ListDelete.Count >= 2)
@@ -324,25 +373,94 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         a.transform.Rotate(0, 0, -angle);
     }
 
-    [ContextMenu("NoTheoChieuDoc")]
-    void NoTheoChieuDoc()
+    //no cac cuc theo chieu doc
+    void NoTheoChieuNgang(int vitri)
     {
         for (int i = 0; i < 8; i++)
         {
-            ListDelete.Add(arrGem[0][i]);
+            ListDelete.Add(arrGem[vitri][i]);
         }
-        Xoa();
     }
-    [ContextMenu("NoTheoChieuNgang")]
-    void NoTheoChieuNgang()
+    //no cac cuc theo chieu ngang
+    void NoTheoChieuDoc(int vitri)
     {
         for (int i = 0; i < 7; i++)
         {
-            ListDelete.Add(arrGem[i][0]);
+            ListDelete.Add(arrGem[i][vitri]);
         }
-        Xoa();
     }
 
+    //no cac cuc theo hai huong
+    void NoTheoHaiChieu(int vitriX, int vitriY)
+    {
+        for (int i = 0; i < 7; i++)
+        {
+            ListDelete.Add(arrGem[i][vitriY]);
+        }
+        for (int i = 0; i < 8; i++)
+        {
+            ListDelete.Add(arrGem[vitriX][i]);
+        }
+
+    }
+
+    //cuc dac biet thu nhat lam cac cuc xung quanh giong nhu no
+    void CucDacBiet(int i, int j)
+    {
+        for (int m = i - 1; m <= i + 1; m++)
+        {
+            for (int n = j - 1; n <= j + 1; n++)
+            {
+                if (m >= 0 && n >= 0 && arrGem[m][n] != arrGem[i][j])
+                {
+                    arrGem[m][n].tag = arrGem[i][j].tag;
+                    arrGem[m][n].GetComponent<Image>().sprite = arrGem[i][j].GetComponent<Image>().sprite;
+                }
+            }
+        }
+    }
+
+    //sau nay xoa
+    void CheckDestroy()
+    {
+        m = Random.Range(0, 5);
+        n = Random.Range(0, 6);
+        if (arrGem[m][n] != null && arrGem[m][n].GetComponent<Gem>().cucDacBiet != true)
+        {
+            //arrGem[m][n].GetComponent<Image>().color = Color.Lerp(arrGem[m][n].GetComponent<Image>().color, Color.black, 0.5f);
+            int a = Random.Range(0, 4);
+            if (a == 0)
+            {
+                arrGem[m][n].GetComponent<Gem>().destroyCollum = true;
+                GameObject meomeo = Instantiate(dacBiet[0], arrGem[m][n].transform.position, Quaternion.identity) as GameObject;
+                meomeo.transform.parent = arrGem[m][n].transform;
+            }
+            if (a == 1)
+            {
+                arrGem[m][n].GetComponent<Gem>().destroyRow = true;
+                GameObject meomeo = Instantiate(dacBiet[1], arrGem[m][n].transform.position, Quaternion.identity) as GameObject;
+                meomeo.transform.parent = arrGem[m][n].transform;
+            }
+            if (a == 2)
+            {
+                arrGem[m][n].GetComponent<Gem>().destroyColRow = true;
+                GameObject meomeo = Instantiate(dacBiet[2], arrGem[m][n].transform.position, Quaternion.identity) as GameObject;
+                meomeo.transform.parent = arrGem[m][n].transform;
+            }
+            if (a == 3)
+            {
+                arrGem[m][n].GetComponent<Gem>().cucDacBiet = true;
+                GameObject meomeo = Instantiate(dacBiet[3], arrGem[m][n].transform.position, Quaternion.identity) as GameObject;
+                meomeo.transform.parent = arrGem[m][n].transform;
+            }
+            
+            cucdacbiet = false;
+            cucdacbiet1 = false;
+        }
+
+    }
+
+    //kiem tra xem con duong de an khong
     List<GameObject> LoangDau(List<GameObject> list, int i, int j)
     {
 
@@ -377,6 +495,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         }
         return list;
     }
+    //dua cac cac dung de an vao list
     void CheckListInvalid()
     {
         listLoangDau.Clear();
@@ -396,7 +515,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
             }
         }
         ResetCheckGem();
-    }
+    }    
     void ResetCheckGem()
     {
         for (int i = 0; i < 7; i++)
@@ -410,6 +529,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
 
     }
 
+    //phong to va nho  kich thuoc cac cuc Gem
     void ScaleGem()
     {
         for (int i = 0; i < listLoangDau[0].Count; i++)
@@ -417,83 +537,100 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
             if (listLoangDau[0][i] != null)
                 listLoangDau[0][i].transform.localScale = new Vector3(localScale, localScale, 1);
         }
+        boolScale = true;
     }
+    //reset kich thuoc cuc Gem ve ban dau
     void ResetScaleGem()
     {
-        for (int i = 0; i < listLoangDau[0].Count; i++)
+        if (boolScale == true)
         {
-            if (listLoangDau[0][i] != null)
-                listLoangDau[0][i].transform.localScale = new Vector3(1, 1, 1);
+            for (int i = 0; i < listLoangDau[0].Count; i++)
+            {
+                if (listLoangDau[0][i] != null)
+                {
+                    listLoangDau[0][i].transform.localScale = new Vector3(1, 1, 1);
+                }
+            }
+            boolScale = false;
         }
     }
 
-    [ContextMenu("Test")]
-
+   //Ran dom lai Map
     public void RandomMap()
     {
         for (int i = 0; i < 7; i++)
         {
             for (int j = 0; j < 8; j++)
-            {
-                listConect.Clear();
-                ListDelete.Clear();
-                listLoangDau.Clear();
+            {                
                 Destroy(arrGem[i][j]);
             }
         }
-
+        listConect.Clear();
+        ListDelete.Clear();
+        listLoangDau.Clear();
     }
 
-    float scale = 0.01f;
-    public float localScale = 1;
 
-    private bool activeHelp;
-    public bool activeTime;
-
-    public float timeHelp;
-    private float help;
-
-
+    void Update()
+    {
+        
+    }
+    int hehe = 0;
     void FixedUpdate()
     {
-        if (activeTime == true)
+
+        textDiemCanDat.text = diemDatDuoc[level].ToString();//chuyen diem tu kieu in sang String
+        textScore.text = "Score: " + score;
+        if (cucdacbiet1 == true && cucdacbiet == true && desGem == true)
         {
+            CheckDestroy();
+        }
+        if (desGem == true)
+        {
+            
+            CacCucRoiXuong();
+            
+        }
+       
+        //sao 5s goi y duong cho nguoi choi
+        if (activeTime == true)
+        {            
+            localScale += scale;
+            if (localScale > 1.2)
+            {
+                scale = -0.01f;
+            }
+            if (localScale < 0.8)
+            {
+                scale = 0.01f;
+            }
+
             if (help > timeHelp)
-            {                
-                activeHelp = true;                
+            {
+                activeHelp = true;
             }
             help += Time.deltaTime;
         }
         if (activeTime == false)
         {
+            activeHelp = false;
             help = 0;
-            activeHelp = false;  
         }
 
-        localScale += scale;
-        if (localScale > 1.2)
-        {
-            scale = -0.01f;
-        }
-        if (localScale < 0.8)
-        {
-            scale = 0.01f;
-        }
+        
+        //phong to, nho kich thuoc cuc Gem cho nguoi choi biet
         if (activeHelp == true)
         {
             ScaleGem();
         }
-        else
+        if (activeHelp == false)
         {
-            ResetScaleGem();
- 
+            ResetScaleGem(); 
         }
-        if (listLoangDau.Count == 0)
+        if (listLoangDau.Count == 0)//neu k con duong nao de an Ramdom lai map
         {
             RandomMap();
         }
-
-       
-
+        
     }
 }

@@ -473,7 +473,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         if (arrGem[m][n] != null && arrGem[m][n].GetComponent<Gem>().cucDacBiet != true)
         {
             //arrGem[m][n].GetComponent<Image>().color = Color.Lerp(arrGem[m][n].GetComponent<Image>().color, Color.black, 0.5f);
-            int a = Random.Range(3, 4);
+            int a = Random.Range(0, 4);
             if (a == 0)
             {
                 arrGem[m][n].GetComponent<Gem>().destroyCollum = true;

@@ -306,24 +306,46 @@ public class GameController : MonoBehaviour {
         }
     }
 
+    [ContextMenu("cucdacbiet2")]
+    void cucdacbiet2()
+    {
+        ResetCucDacBiet(1, 1);
+    }
+     List<GameObject> listDacBiet = new List<GameObject>();
+     void ResetCucDacBiet(int i, int j)
+     {
+         for (int m = i - 1; m <= i + 1; m++)
+         {
+             for (int n = j - 1; n <= j + 1; n++)
+             {
+                 if (m >= 0 && n >= 0)
+                 {
+                     arrGem[m][n].tag = listGem[arrGem[m][n].GetComponent<Gem>().inDex].tag;
+                     arrGem[m][n].GetComponent<Image>().sprite = listGem[arrGem[m][n].GetComponent<Gem>().inDex].GetComponent<Image>().sprite;
+                     
+                 }
+             }
+         }
+     }
     [ContextMenu("cucdacbiet1")]
     void cucdacbiet1()
     {
         CucDacBiet(1, 1);
-    }
+    }    
     void CucDacBiet(int i,int j)
     {
         for (int m = i - 1; m <= i + 1; m++)
         {
             for (int n = j - 1; n <= j + 1; n++)
             {
-                if (m >= 0 && n >= 0 && arrGem[m][n] != arrGem[i][j])
+                if (m < 0 && n < 0 )
                 {
-                    arrGem[m][n].tag = arrGem[i][j].tag;
-                    arrGem[m][n].GetComponent<Image>().sprite = arrGem[i][j].GetComponent<Image>().sprite;
+                    return;
                 }
+                arrGem[m][n].tag = arrGem[i][j].tag;
+                arrGem[m][n].GetComponent<Image>().sprite = arrGem[i][j].GetComponent<Image>().sprite;
             }
-        }
+        }        
     }
     float scale = 0.01f;
     float localScale = 1;

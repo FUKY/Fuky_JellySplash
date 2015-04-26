@@ -34,6 +34,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
     private List<GameObject> ListDelete = new List<GameObject>();//list Object de xoa
     private List<GameObject> listConect = new List<GameObject>();//tao lien ket cho cac cuc(sau nay thanh thanh Animation)
     private List<List<GameObject>> listLoangDau = new List<List<GameObject>>();//kiem tra con duong nao de an khong
+    private List<GameObject> listMouse = new List<GameObject>();//luu tat cac cac gem khi duoc keo
     private int[][] map;//map Game(load tu file txt)
     private Gem gem;
 
@@ -255,6 +256,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         
         ListDelete.Clear();
         listConect.Clear();
+        listMouse.Clear();
         
     }
 
@@ -274,7 +276,8 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         {
             if (ListDelete.Count == 0)
             {               
-                ListDelete.Add(rayHit.collider.gameObject);                
+                ListDelete.Add(rayHit.collider.gameObject);
+                listMouse.Add(rayHit.collider.gameObject);
             }
         }
         
@@ -311,6 +314,10 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
 
         if (rayHit.collider.gameObject.tag == ListDelete[0].tag && KiemTraKhoangCach(rayHit.collider.gameObject, ListDelete[ListDelete.Count - 1]) <= 1.5f)//kiem tra de dua vao listDelete
         {
+            if (!listMouse.Contains(rayHit.collider.gameObject))
+            {
+                listMouse.Add(rayHit.collider.gameObject);
+            }
             if (!ListDelete.Contains(rayHit.collider.gameObject) && ListDelete.Count >= 1)//kiem tra xem doi tuong chon da co trong ListDelete chua
             {
                 InstantiateConect(rayHit.collider.gameObject, ListDelete[ListDelete.Count - 1]);//xuat ket noi ra man hinh
@@ -318,23 +325,38 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
 
                 if (ListDelete.Count == 5)
                 {
-                    cucdacbiet = true;
-                    
+                    cucdacbiet = true;                    
                 }
-                if (rayHit.collider.gameObject.GetComponent<Gem>().cucDacBiet == true)
+                if (ListDelete.Contains(rayHit.collider.gameObject) && rayHit.collider.gameObject.GetComponent<Gem>().cucDacBiet == true)
                 {
                     CucDacBiet(TimViTriX(rayHit.collider.gameObject), TimViTriY(rayHit.collider.gameObject));
                 }
+
 
             }
             if (ListDelete.Count >= 2)
             {
                 if (rayHit.collider.gameObject == ListDelete[ListDelete.Count - 2] && listConect.Count >= 1)//neu nguoi choi quay lai cuc phia trc co
                 {
+                    
                     ListDelete.RemoveAt(ListDelete.Count - 1);
                     Destroy(listConect[listConect.Count - 1]);
                     listConect.RemoveAt(listConect.Count - 1);
-
+                    GameObject a = new GameObject();
+                    for (int i = 0; i < listMouse.Count; i++)
+                    {
+                        if (listMouse[i].GetComponent<Gem>().cucDacBiet == true)
+                        {
+                            a = listMouse[i];
+                        }
+                    }
+                    if (!ListDelete.Contains(a))
+                    {
+                        ResetCucDacBiet(TimViTriX(a), TimViTriY(a));
+                        listMouse.RemoveAt(listMouse.Count - 1);
+                    }
+                    
+                        
                 }
             }
 
@@ -403,8 +425,28 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         }
 
     }
+    [ContextMenu("Test")]
+    void Test()
+    {
+        ResetCucDacBiet(m, n);
+    }
+    //reset cuc dac biet
+    void ResetCucDacBiet(int i, int j)
+    {
+        for (int m = i - 1; m <= i + 1; m++)
+        {
+            for (int n = j - 1; n <= j + 1; n++)
+            {
+                if (m >= 0 && n >= 0)
+                {
+                    arrGem[m][n].tag = listGem[arrGem[m][n].GetComponent<Gem>().inDex].tag;
+                    arrGem[m][n].GetComponent<Image>().sprite = listGem[arrGem[m][n].GetComponent<Gem>().inDex].GetComponent<Image>().sprite;
 
-    //cuc dac biet thu nhat lam cac cuc xung quanh giong nhu no
+                }
+            }
+        }
+    }
+    //cuc dac biet thu nhat lam cac cuc xung quanh giong nhu no    
     void CucDacBiet(int i, int j)
     {
         for (int m = i - 1; m <= i + 1; m++)
@@ -413,8 +455,11 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
             {
                 if (m >= 0 && n >= 0 && arrGem[m][n] != arrGem[i][j])
                 {
-                    arrGem[m][n].tag = arrGem[i][j].tag;
-                    arrGem[m][n].GetComponent<Image>().sprite = arrGem[i][j].GetComponent<Image>().sprite;
+                    if (arrGem[m][n].GetComponent<Gem>().cucDacBiet == false)
+                    {
+                        arrGem[m][n].tag = arrGem[i][j].tag;
+                        arrGem[m][n].GetComponent<Image>().sprite = arrGem[i][j].GetComponent<Image>().sprite;
+                    }
                 }
             }
         }
@@ -428,7 +473,7 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
         if (arrGem[m][n] != null && arrGem[m][n].GetComponent<Gem>().cucDacBiet != true)
         {
             //arrGem[m][n].GetComponent<Image>().color = Color.Lerp(arrGem[m][n].GetComponent<Image>().color, Color.black, 0.5f);
-            int a = Random.Range(0, 4);
+            int a = Random.Range(3, 4);
             if (a == 0)
             {
                 arrGem[m][n].GetComponent<Gem>().destroyCollum = true;
@@ -575,7 +620,6 @@ public class LoadImageController : MonoBehaviour, IBeginDragHandler, IEndDragHan
     {
         
     }
-    int hehe = 0;
     void FixedUpdate()
     {
 
